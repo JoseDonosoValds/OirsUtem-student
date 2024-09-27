@@ -1,92 +1,62 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
-import '../utils/user_data.dart'; // Import the UserModel
+
+import '../utils/user_data.dart'; // Importa el UserModel
 
 class GoogleServices {
   static final Logger _logger = Logger();
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
-  static final GoogleSignIn _googleSignIn = GoogleSignIn();
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(); // Instancia de GoogleSignIn para el flujo nativo
 
-  // Sign in with Google and Firebase
+  // Iniciar sesión con Google y actualizar el UserModel
   static Future<bool> signInWithGoogle(UserModel userModel) async {
     try {
-      // Trigger the Google Sign-In flow
+      // Inicia el flujo de autenticación de Google en Android con el pop-up nativo
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
       if (googleUser == null) {
-        _logger.w('Google sign-in canceled by user.');
-        // Ensure the user is signed out
-        await _signOutOnFailure(userModel);
-        return false; // User canceled the sign-in
+        _logger.w('Inicio de sesión con Google cancelado por el usuario.');
+        await _handleSignOut(userModel);
+        return false; // El usuario canceló el inicio de sesión
       }
 
-      // Ensure that the email belongs to the @utem.cl domain
-      if (!googleUser.email.endsWith('@utem.cl')) {
-        _logger.w('El correo no pertenece al dominio @utem.cl');
-        // Ensure the user is signed out
-        await _signOutOnFailure(userModel);
-        return false; // Email is not from @utem.cl domain
-      }
-
-      // Obtain the Google Sign-In authentication
+      // Obtén las credenciales de autenticación de Google
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-      // Create a new credential for Firebase authentication
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase with the Google credential
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      final User? firebaseUser = userCredential.user;
-
-      if (firebaseUser != null) {
-        _logger.i('Successfully signed in with Firebase: ${firebaseUser.email}');
-        // Update the UserModel with the user's information
-        userModel.updateUser(
-          firebaseUser.displayName,
-          firebaseUser.email,
-          firebaseUser.photoURL,
-          googleAuth.idToken,
-          googleAuth.accessToken,
-        );
-        return true;
-      } else {
-        _logger.e('Firebase user is null after signing in.');
-        // Ensure the user is signed out
-        await _signOutOnFailure(userModel);
-        return false;
-      }
+      // Actualiza el UserModel con la información obtenida de Google
+      _updateUserModel(userModel, googleUser, googleAuth.idToken, googleAuth.accessToken);
+      _logger.i('Inicio de sesión exitoso con Google: ${googleUser.email}');
+      return true;
     } catch (error) {
-      _logger.e('Error signing in with Google and Firebase: $error');
-      // Ensure the user is signed out
-      await _signOutOnFailure(userModel);
+      _logger.e('Error durante el inicio de sesión con Google: $error');
+      await _handleSignOut(userModel);
       return false;
     }
   }
 
-  // Helper function to handle sign out on failure
-  static Future<void> _signOutOnFailure(UserModel userModel) async {
-    try {
-      await _googleSignIn.signOut();
-      await _auth.signOut();
-      userModel.updateUser('', '', '', '', '');
-      _logger.i('Successfully signed out after failed login attempt.');
-    } catch (error) {
-      _logger.e('Error during sign out after login failure: $error');
-    }
+  // Actualiza el modelo de usuario con la información obtenida de Google
+  static void _updateUserModel(UserModel userModel, GoogleSignInAccount googleUser, String? idToken, String? accessToken) {
+    userModel.updateUser(
+      googleUser.displayName,
+      googleUser.email,
+      googleUser.photoUrl,
+      idToken,        // idToken de Google obtenido
+      accessToken,    // accessToken de Google obtenido
+    );
   }
 
-  // Sign out from Google and Firebase
+  // Cierra sesión de GoogleSignIn y limpia el UserModel
   static Future<void> signOutGoogle(UserModel userModel) async {
+    await _handleSignOut(userModel);
+    _logger.i('Cierre de sesión exitoso de Google.');
+  }
+
+  // Lógica para cerrar sesión y limpiar el estado del usuario
+  static Future<void> _handleSignOut(UserModel userModel) async {
     try {
-      await _googleSignIn.signOut();
-      await _auth.signOut();
+      await _googleSignIn.signOut();  // Cierra sesión de Google
       userModel.updateUser('', '', '', '', '');
-      _logger.i('Successfully signed out from Google and Firebase.');
     } catch (error) {
-      _logger.e('Error signing out: $error');
+      _logger.w('Error durante el cierre de sesión: $error');
     }
   }
 }
