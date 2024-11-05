@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'crear_solicitud.dart';
-import 'estado_solicitud.dart';
+import 'mis_solicitudes.dart';
 import '../utils/navbar.dart'; // Import the Navbar for consistency
 
 class SolicitudesScreen extends StatelessWidget {
@@ -33,7 +33,7 @@ class SolicitudesScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const EstadoSolicitudScreen()),
+                  MaterialPageRoute(builder: (context) => const MisSolicitudesScreen()),
                 );
               },
               child: const Text('Estado de mis Solicitudes'),

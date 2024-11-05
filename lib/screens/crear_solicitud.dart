@@ -4,7 +4,7 @@ import '../services/api_services.dart'; // Importar el ApiService
 import '../utils/user_data.dart'; // Importar el UserModel
 import '../utils/navbar.dart'; // Importar el Navbar
 import '../utils/classes/get/info_categories.dart'; // Importar la clase para manejar las categorías
-import '../utils/classes/get/types.dart'; // Importar la función para manejar los tipos de solicitud
+// import '../utils/classes/get/types.dart'; // Importar la función para manejar los tipos de solicitud
 
 class CrearSolicitudScreen extends StatefulWidget {
   const CrearSolicitudScreen({super.key});

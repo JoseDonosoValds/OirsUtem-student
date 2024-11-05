@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import '../utils/classes/get/error_status.dart'; // Importar ErrorStatus
 
 class ApiService {
   static final Logger _logger = Logger(
@@ -16,7 +17,6 @@ class ApiService {
 
   // Método GET para obtener datos de la API, autenticado con idToken
   static Future<dynamic> get(String url, String idToken) async {
-
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -26,11 +26,12 @@ class ApiService {
           'accept': 'application/json',        // Header para recibir JSON
         },
       );
+
       if (response.statusCode == 200) {
         final decodedResponse = utf8.decode(response.bodyBytes);
-        return jsonDecode(decodedResponse); 
+        return jsonDecode(decodedResponse);
       } else {
-        _logger.e('Error en la petición GET: ${response.statusCode}, ${response.body}');
+        _handleError(response);
         return null;
       }
     } catch (e) {
@@ -59,9 +60,9 @@ class ApiService {
       if (response.statusCode == 201) {
         _logger.i('Respuesta exitosa en POST: ${response.statusCode}, ${response.body}');
         final decodedResponse = utf8.decode(response.bodyBytes);
-        return jsonDecode(decodedResponse); 
+        return jsonDecode(decodedResponse);
       } else {
-        _logger.e('Error en la petición POST: ${response.statusCode}, ${response.body}');
+        _handleError(response);
         return null;
       }
     } catch (e) {
@@ -89,9 +90,9 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final decodedResponse = utf8.decode(response.bodyBytes);
-        return jsonDecode(decodedResponse); 
+        return jsonDecode(decodedResponse);
       } else {
-        _logger.e('Error en la petición PUT: ${response.statusCode}, ${response.body}');
+        _handleError(response);
         return null;
       }
     } catch (e) {
@@ -124,12 +125,24 @@ class ApiService {
       if (response.statusCode == 200) {
         return true; // Eliminación exitosa
       } else {
-        _logger.e('Error en la petición DELETE: ${response.statusCode}, ${response.body}');
+        _handleError(response);
         return false;
       }
     } catch (e) {
       _logger.e('Excepción en la petición DELETE: $e');
       return false;
+    }
+  }
+
+  // Método para manejar los errores usando el esquema RFC7807
+  static void _handleError(http.Response response) {
+    try {
+      final decodedResponse = utf8.decode(response.bodyBytes);
+      final errorStatus = errorStatusFromJson(decodedResponse);
+      _logger.e(
+          'Error en la petición: ${errorStatus.title}, Status: ${errorStatus.status}, Detalle: ${errorStatus.detail}, Tipo: ${errorStatus.type}, Instancia: ${errorStatus.instance}');
+    } catch (e) {
+      _logger.e('Error inesperado al manejar la respuesta de error: ${response.body}, Excepción: $e');
     }
   }
 }

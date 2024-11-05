@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // For using Google Fonts
+import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../services/google_services.dart';
 import '../utils/user_data.dart';
-import '../utils/navbar.dart'; // Import the Navbar widget
+import '../utils/navbar.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -28,22 +28,10 @@ class HomeScreen extends StatelessWidget {
       );
     }
 
-    // Function to censor email
-    String censorEmail(String email) {
-      if (email.isEmpty || !email.contains('@')) {
-        return email;
-      }
-      final parts = email.split('@');
-      final localPart = parts[0];
-      final domainPart = parts[1];
-      final censoredLocalPart = localPart[0] + '*' * (localPart.length - 1);
-      return '$censoredLocalPart@$domainPart';
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Inicio',
+          'Estudiante',
           style: GoogleFonts.pacifico(fontSize: 28, color: Colors.white),
         ),
         centerTitle: true,
@@ -76,54 +64,99 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Saludo personalizado
+              Text(
+                'Hola! ${userModel.displayName ?? '_NOMBRE'}',
+                style: GoogleFonts.poppins(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Crear Solicitud Section
+              Text(
+                'Crear Solicitud',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildSolicitudOption(
+                    context,
+                    'Reclamo',
+                    Icons.warning_amber_rounded,
+                    Colors.orange.shade300,
+                  ),
+                  _buildSolicitudOption(
+                    context,
+                    'Sugerencia',
+                    Icons.lightbulb,
+                    Colors.green.shade300,
+                  ),
+                  _buildSolicitudOption(
+                    context,
+                    'Información',
+                    Icons.info_outline,
+                    Colors.blue.shade300,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: const Navbar(currentIndex: 0),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Acción del botón flotante
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.blueAccent,
+      ),
+    );
+  }
+
+  // Widget para construir la opción de crear solicitud
+  Widget _buildSolicitudOption(BuildContext context, String title, IconData icon, Color color) {
+    return GestureDetector(
+      onTap: () {
+        // Acción para navegar o crear solicitud
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(15),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Profile Picture
-            CircleAvatar(
-              backgroundImage: userModel.photoUrl != null && userModel.photoUrl!.isNotEmpty
-                  ? NetworkImage(userModel.photoUrl!)
-                  : const AssetImage('assets/default_profile.png') as ImageProvider,
-              radius: 50,
-            ),
-            const SizedBox(height: 20),
-            // User Info Card
-            Card(
-              elevation: 5,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Display name
-                    Text(
-                      userModel.displayName ?? 'No name',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Email (censored)
-                    Text(
-                      censorEmail(userModel.email ?? ''),
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: const Navbar(currentIndex: 0),
     );
   }
 }
