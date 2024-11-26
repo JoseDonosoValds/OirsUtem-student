@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'crear_solicitud.dart';
 import 'mis_solicitudes.dart';
-import '../utils/navbar.dart'; // Import the Navbar for consistency
+import '../utils/navbar.dart'; 
 
 class SolicitudesScreen extends StatelessWidget {
   const SolicitudesScreen({super.key});

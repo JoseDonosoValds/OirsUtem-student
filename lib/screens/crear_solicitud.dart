@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/api_services.dart'; // Importar el ApiService
-import '../utils/user_data.dart'; // Importar el UserModel
+import '../services/api_services.dart'; // Importar ApiService
+import '../utils/user_data.dart'; // Importar UserModel
 import '../utils/navbar.dart'; // Importar el Navbar
 import '../utils/classes/get/info_categories.dart'; // Importar la clase para manejar las categorías
-// import '../utils/classes/get/types.dart'; // Importar la función para manejar los tipos de solicitud
+import '../utils/appbar.dart'; // Importar el AppBar personalizado
 
 class CrearSolicitudScreen extends StatefulWidget {
-  const CrearSolicitudScreen({super.key});
+  const CrearSolicitudScreen({Key? key}) : super(key: key);
 
   @override
   _CrearSolicitudScreenState createState() => _CrearSolicitudScreenState();
@@ -15,252 +15,211 @@ class CrearSolicitudScreen extends StatefulWidget {
 
 class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
   List<CategoryTicketTypes> categories = [];
-  List<String> types =
-      []; // Lista para manejar los tipos de solicitud como cadenas de texto
+  List<String> types = [];
   CategoryTicketTypes? selectedCategory;
-  String? selectedType; // Variable para el tipo de solicitud seleccionado
-  bool isLoading = true;
-  bool isCategorySelected = false;
-  bool isTypeSelected =
-      false; // Nueva bandera para verificar si se seleccionó un tipo
-  bool isSubjectEntered = false;
-  static const String url =
-      'https://api.sebastian.cl/oirs-utem'; // URL base de tu API
+  String? selectedType;
+  bool isLoadingCategories = true;
+  bool isLoadingTypes = false;
 
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
+
+  static const String url = 'https://api.sebastian.cl/oirs-utem';
 
   @override
   void initState() {
     super.initState();
     _fetchCategories();
-    _fetchTypes(); // Llamada para obtener los tipos de solicitudes
   }
 
   Future<void> _fetchCategories() async {
     final userModel = Provider.of<UserModel>(context, listen: false);
-    final idToken = userModel.idToken; // Obtiene el idToken desde Provider
+    final idToken = userModel.idToken;
 
-    final data = await ApiService.get(
-        "$url/v1/info/categories", idToken!); // URL de tu API
+    final data = await ApiService.get("$url/v1/info/categories", idToken!);
 
     if (data != null) {
       setState(() {
         categories = List<CategoryTicketTypes>.from(
           data.map((item) => CategoryTicketTypes.fromJson(item)),
         );
-        isLoading = false;
+        isLoadingCategories = false;
       });
     } else {
       setState(() {
-        isLoading = false;
+        isLoadingCategories = false;
       });
     }
   }
 
-  // Nueva función para obtener los tipos de solicitudes
-  Future<void> _fetchTypes() async {
+  Future<void> _fetchTypes(String categoryToken) async {
     final userModel = Provider.of<UserModel>(context, listen: false);
-    final idToken = userModel.idToken; // Obtiene el idToken desde Provider
+    final idToken = userModel.idToken;
+
+    setState(() {
+      isLoadingTypes = true;
+    });
 
     final data =
-        await ApiService.get("$url/v1/info/types", idToken!); // URL de tu API
+        await ApiService.get("$url/v1/info/types", idToken!);
 
     if (data != null) {
       setState(() {
-        types = List<String>.from(
-            data); // Maneja los tipos de solicitud como una lista de Strings
-        isLoading = false;
+        types = List<String>.from(data);
+        selectedType = null;
+        isLoadingTypes = false;
       });
     } else {
       setState(() {
-        isLoading = false;
+        isLoadingTypes = false;
       });
     }
   }
 
-  // Función para enviar la solicitud (POST)
   Future<void> _sendRequest() async {
-    final userModel = Provider.of<UserModel>(context, listen: false);
-    final idToken = userModel.idToken; // Obtiene el idToken desde Provider
+  final userModel = Provider.of<UserModel>(context, listen: false);
+  final idToken = userModel.idToken;
 
-    if (selectedCategory == null || selectedType == null) {
-      _showErrorDialog(
-          'Por favor selecciona una categoría y un tipo de solicitud.');
-      return;
-    }
-
-    // Construir la URL dinámica
-    final postUrl = "$url/v1/icso/${selectedCategory!.token}/ticket";
-
-    // Crear el body del POST en formato JSON
-    final body = {
-      "type": selectedType,
-      "subject": _subjectController.text,
-      "message": _bodyController.text,
-    };
-
-    // Hacer el POST
-    final response = await ApiService.post(postUrl, idToken!, body);
-
-    if (response != null) {
-      _showSuccessDialog('Solicitud enviada exitosamente. :$response');
-    } else {
-      _showErrorDialog(
-          'Error al enviar la solicitud. Por favor, intenta de nuevo.');
-    }
-  }
-
-  // Mostrar diálogo de éxito
-  void _showSuccessDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Éxito'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
+  if (selectedCategory == null || selectedType == null) {
+    _showDialog(
+      'Error',
+      'Por favor selecciona una categoría y un tipo de solicitud.',
     );
+    return;
   }
 
-  // Mostrar diálogo de error
-  void _showErrorDialog(String message) {
+  final body = {
+    "type": selectedType,
+    "subject": _subjectController.text,
+    "message": _bodyController.text,
+  };
+
+  final postUrl = "$url/v1/icso/${selectedCategory!.token}/ticket";
+
+  final response = await ApiService.post(postUrl, idToken!, body);
+
+  if (response != null) {
+    _showDialog('Éxito', 'Solicitud enviada exitosamente.');
+    _resetFields(); // Vaciar los campos después de enviar
+  } else {
+    _showDialog('Error', 'No se pudo enviar la solicitud. Inténtalo de nuevo.');
+  }
+}
+
+void _resetFields() {
+  setState(() {
+    // Vaciar los campos de texto
+    _subjectController.clear();
+    _bodyController.clear();
+    // Reiniciar las selecciones
+    selectedCategory = null;
+    selectedType = null;
+    types = [];
+  });
+}
+
+  void _showDialog(String title, String message) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Crear Solicitud'),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Categoría:',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  DropdownButton<CategoryTicketTypes>(
-                    hint: const Text('Selecciona una categoría'),
-                    isExpanded: true,
-                    value: selectedCategory,
-                    items: categories.map((category) {
-                      return DropdownMenuItem<CategoryTicketTypes>(
-                        value: category,
-                        child: Text(category.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCategory = value;
-                        isCategorySelected = true;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Nueva sección para el tipo de solicitud
-                  const Text(
-                    'Tipo de Solicitud:',
-                    style: TextStyle(fontSize: 18),
-                  ),
+      appBar: CustomAppBar(title: 'Crear Solicitud'), // AppBar personalizado
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.05,
+              vertical: MediaQuery.of(context).size.height * 0.02,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButton<CategoryTicketTypes>(
+                  isExpanded: true,
+                  value: selectedCategory,
+                  hint: const Text('Selecciona una categoría'),
+                  items: categories.map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedCategory = value;
+                      types = [];
+                      selectedType = null;
+                    });
+                    if (value != null) {
+                      _fetchTypes(value.token);
+                    }
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                if (isLoadingTypes)
+                  const Center(child: CircularProgressIndicator())
+                else if (types.isNotEmpty)
                   DropdownButton<String>(
-                    hint: const Text('Selecciona el tipo de solicitud'),
                     isExpanded: true,
                     value: selectedType,
+                    hint: const Text('Selecciona un tipo de solicitud'),
                     items: types.map((type) {
-                      return DropdownMenuItem<String>(
+                      return DropdownMenuItem(
                         value: type,
-                        child: Text(
-                            type), // Mostrar el nombre del tipo de solicitud
+                        child: Text(type),
                       );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
                         selectedType = value;
-                        isTypeSelected = true;
                       });
                     },
                   ),
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    'Asunto:',
-                    style: TextStyle(fontSize: 18),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: _subjectController,
+                  decoration: const InputDecoration(
+                    labelText: 'Asunto',
+                    border: OutlineInputBorder(),
                   ),
-                  TextField(
-                    controller: _subjectController,
-                    enabled: isCategorySelected && isTypeSelected,
-                    onChanged: (value) {
-                      setState(() {
-                        isSubjectEntered = value.isNotEmpty;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Ingresa el asunto',
-                      border: OutlineInputBorder(),
-                      enabled: isCategorySelected && isTypeSelected,
-                    ),
+                ),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: _bodyController,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: 'Mensaje',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Cuerpo:',
-                    style: TextStyle(fontSize: 18),
+                ),
+                const SizedBox(height: 16.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _sendRequest,
+                    child: const Text('Enviar Solicitud'),
                   ),
-                  TextField(
-                    controller: _bodyController,
-                    enabled: isCategorySelected &&
-                        isTypeSelected &&
-                        isSubjectEntered,
-                    decoration: InputDecoration(
-                      hintText: 'Escribe el cuerpo de la solicitud',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 5,
-                  ),
-                  const SizedBox(height: 20),
-                  // Botón para enviar la solicitud
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _sendRequest, // Enviar la solicitud
-                      child: const Text('Enviar Solicitud'),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      bottomNavigationBar: const Navbar(currentIndex: 0),
+      bottomNavigationBar: const Navbar(currentIndex: 1), // Integrar el Navbar
     );
   }
 }

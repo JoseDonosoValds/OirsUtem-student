@@ -4,16 +4,7 @@ import 'package:logger/logger.dart';
 import '../utils/classes/get/error_status.dart'; // Importar ErrorStatus
 
 class ApiService {
-  static final Logger _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0, // No imprimir los métodos
-      errorMethodCount: 5, // Cantidad de líneas en errores
-      lineLength: 1024, // Aumentar el límite de longitud de línea
-      colors: true, // Imprimir en color
-      printEmojis: true, // Incluir emojis en el log
-      printTime: false, // No mostrar la hora
-    ),
-  );
+  static final Logger _logger = Logger();
 
   // Método GET para obtener datos de la API, autenticado con idToken
   static Future<dynamic> get(String url, String idToken) async {

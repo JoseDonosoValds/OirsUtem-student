@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
-import '../screens/solicitudes.dart'; // Import the new Solicitudes screen
+import '../screens/mis_solicitudes.dart'; // Import the new Solicitudes screen
 // Import additional screens as needed.
 
 class Navbar extends StatelessWidget {
@@ -20,7 +20,7 @@ class Navbar extends StatelessWidget {
         nextScreen = const HomeScreen();
         break;
       case 1:
-        nextScreen = const SolicitudesScreen();
+        nextScreen = const MisSolicitudesScreen();
         break;
       case 2:
         // Placeholder for Settings or Profile Screen
@@ -34,10 +34,7 @@ class Navbar extends StatelessWidget {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => WillPopScope(
-          onWillPop: () async => false, // Deshabilitar el botón de retroceso
-          child: nextScreen,
-        ),
+        pageBuilder: (context, animation1, animation2) => nextScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0); // Empieza desde la derecha (1.0 en el eje X)
           const end = Offset.zero; // Termina en su posición original

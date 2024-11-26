@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // Google Fonts for custom font
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:appcm202402/screens/home_screen.dart';
+import '/screens/home_screen.dart';
 import '../services/google_services.dart';
 import 'package:sign_in_button/sign_in_button.dart'; // Using the SignInButton package
 import '../utils/user_data.dart'; // Import UserModel
