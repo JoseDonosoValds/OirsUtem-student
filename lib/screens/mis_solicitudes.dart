@@ -15,8 +15,6 @@ import '../utils/appbar.dart'; // Importar el AppBar personalizado
 class MisSolicitudesScreen extends StatefulWidget {
   const MisSolicitudesScreen({super.key});
 
-
-
   @override
   _MisSolicitudesScreenState createState() => _MisSolicitudesScreenState();
 }
@@ -30,7 +28,7 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
   final ScrollController _scrollController = ScrollController();
   static const String baseUrl = 'https://api.sebastian.cl/oirs-utem';
 
-  static final Logger _logger = Logger(); 
+  static final Logger _logger = Logger();
 
   String? selectedFile; // Para manejar el archivo seleccionado
 
@@ -44,6 +42,39 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _updateTicket(
+      String ticketToken, String type, String subject, String message) async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final idToken = userModel.idToken;
+
+    final url = "$baseUrl/v1/icso/$ticketToken/ticket";
+
+    final body = {
+      "type": type,
+      "subject": subject,
+      "message": message,
+    };
+
+    try {
+      final response = await ApiService.put(url, idToken!, body);
+
+      if (response != null) {
+        // Mostrar mensaje de éxito
+        _showDialog('Éxito', 'Solicitud actualizada correctamente.');
+
+        // Cerrar todos los diálogos
+        Navigator.of(context).popUntil((route) => route.isFirst);
+
+        // Recargar la lista de tickets
+        await _fetchCategoriesAndSolicitudes();
+      } else {
+        _showDialog('Error', 'No se pudo actualizar la solicitud.');
+      }
+    } catch (e) {
+      _showDialog('Error', 'Ocurrió un error al actualizar la solicitud: $e');
+    }
   }
 
   Future<void> _fetchCategoriesAndSolicitudes() async {
@@ -85,7 +116,8 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
     final userModel = Provider.of<UserModel>(context, listen: false);
     final idToken = userModel.idToken;
 
-    final url = "$baseUrl/v1/attachments/$ticketToken/upload";
+    final url =
+        "https://api.sebastian.cl/oirs-utem/v1/attachments/$ticketToken/upload";
 
     final body = {
       "name": name,
@@ -97,9 +129,16 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
       final response = await ApiService.post(url, idToken!, body);
 
       if (response != null) {
+        // Mostrar un mensaje de éxito si el campo success es true
         _showDialog('Éxito', 'Archivo enviado correctamente.');
       } else {
-        _showDialog('Error', 'No se pudo enviar el archivo. Intenta de nuevo.');
+        // Mostrar un mensaje de error con detalle si está disponible
+        _showDialog(
+          'Error',
+          response != null && response['detail'] != null
+              ? response['detail']
+              : 'No se pudo enviar el archivo. Intenta de nuevo.',
+        );
       }
     } catch (e) {
       _showDialog('Error', 'Ocurrió un error al enviar el archivo: $e');
@@ -186,9 +225,192 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
   }
 
   void _showSolicitudDetailPopup(OwnTickets solicitud, Color tipoColor) {
-    String? fileName; // Nombre del archivo adjunto
-    String? mimeType; // Tipo MIME del archivo adjunto
-    String? base64Data; // Contenido del archivo en base64
+    String? fileName;
+    String? mimeType;
+    String? base64Data;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade400,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Detalle de la Solicitud',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF04347c),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDetailRow('Token:', solicitud.token),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Tipo:', solicitud.type),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Asunto:', solicitud.subject),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Estado:', solicitud.status),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Categoría:', solicitud.category.name),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Mensaje:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      solicitud.message,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showEditForm(solicitud),
+                        icon: const Icon(Icons.edit),
+                        label: const Text('Editar Solicitud'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF04347c),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Adjuntar archivo:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final result =
+                                  await FilePicker.platform.pickFiles(
+                                allowedExtensions: [
+                                  'pdf',
+                                  'jpg',
+                                  'jpeg',
+                                  'png'
+                                ],
+                                type: FileType.custom,
+                                withData: true,
+                              );
+
+                              if (result != null) {
+                                final file = result.files.single;
+                                setState(() {
+                                  fileName = file.name;
+                                  mimeType = file.extension == 'pdf'
+                                      ? 'application/pdf'
+                                      : 'image/${file.extension}';
+                                  base64Data = file.bytes != null
+                                      ? base64Encode(file.bytes!)
+                                      : null;
+                                  _logger.d(
+                                      'Selected file: $fileName, base64: $base64Data, mime: $mimeType');
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.attach_file),
+                            label: const Text('Seleccionar Archivo'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF04347c),
+                            ),
+                          ),
+                        ),
+                        if (fileName != null)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              setState(() {
+                                fileName = null;
+                                mimeType = null;
+                                base64Data = null;
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                    if (fileName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Archivo seleccionado: $fileName',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  await _sendAttachment(solicitud.token,
+                                      fileName!, mimeType!, base64Data!);
+                                },
+                                icon: const Icon(Icons.send),
+                                label: const Text('Enviar Archivo'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditForm(OwnTickets solicitud) {
+    String? updatedType = solicitud.type;
+    final TextEditingController subjectController =
+        TextEditingController(text: solicitud.subject);
+    final TextEditingController messageController =
+        TextEditingController(text: solicitud.message);
 
     showModalBottomSheet(
       context: context,
@@ -198,25 +420,15 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
       ),
       builder: (BuildContext context) {
         return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
                 Text(
-                  'Detalle de la Solicitud',
+                  'Editar Solicitud',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -224,92 +436,62 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildDetailRow('Token:', solicitud.token),
-                const SizedBox(height: 8),
-                _buildDetailRow('Tipo:', solicitud.type),
-                const SizedBox(height: 8),
-                _buildDetailRow('Asunto:', solicitud.subject),
-                const SizedBox(height: 8),
-                _buildDetailRow('Estado:', solicitud.status),
-                const SizedBox(height: 8),
-                _buildDetailRow('Categoría:', solicitud.category.name),
+                DropdownButtonFormField<String>(
+                  value: updatedType,
+                  decoration: const InputDecoration(
+                    labelText: 'Tipo',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    'CLAIM',
+                    'SUGGESTION',
+                    'INFORMATION',
+                  ].map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    updatedType = value;
+                  },
+                ),
                 const SizedBox(height: 16),
-                Text(
-                  'Mensaje:',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                TextFormField(
+                  controller: subjectController,
+                  decoration: const InputDecoration(
+                    labelText: 'Asunto',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  solicitud.message,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.grey.shade700,
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: messageController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Mensaje',
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
                     onPressed: () async {
-                      final result = await FilePicker.platform.pickFiles(
-                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-                        type: FileType.custom,
-                        withData: true,
+                      await _updateTicket(
+                        solicitud.token,
+                        updatedType!,
+                        subjectController.text,
+                        messageController.text,
                       );
-
-                      if (result != null) {
-                        final file = result.files.single;
-                        setState(() {
-                          fileName = file.name;
-                          mimeType = file.extension == 'pdf'
-                              ? 'application/pdf'
-                              : 'image/${file.extension}';
-                          base64Data = file.bytes != null
-                              ? base64Encode(file.bytes!)
-                              : null;
-                          _logger.d(
-                              'Selected file: $fileName, base64: $base64Data, mime: $mimeType');
-                        });
-                      }
+                      Navigator.pop(context);
                     },
-                    icon: const Icon(Icons.attach_file),
-                    label: const Text('Adjuntar Archivo'),
+                    child: const Text('Actualizar'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF04347c),
                     ),
                   ),
                 ),
-                if (fileName != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      'Archivo adjunto: $fileName',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 16),
-                if (fileName != null && mimeType != null && base64Data != null)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await _sendAttachment(
-                            solicitud.token, fileName!, mimeType!, base64Data!);
-                      },
-                      icon: const Icon(Icons.send),
-                      label: const Text('Enviar Archivo'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
