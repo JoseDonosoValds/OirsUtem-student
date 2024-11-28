@@ -5,6 +5,7 @@ import '../utils/user_data.dart'; // Importar UserModel
 import '../utils/navbar.dart'; // Importar el Navbar
 import '../utils/classes/get/info_categories.dart'; // Importar la clase para manejar las categorías
 import '../utils/appbar.dart'; // Importar el AppBar personalizado
+import 'mis_solicitudes.dart'; // Importar la pantalla de Mis Solicitudes
 
 class CrearSolicitudScreen extends StatefulWidget {
   const CrearSolicitudScreen({Key? key}) : super(key: key);
@@ -60,8 +61,7 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
       isLoadingTypes = true;
     });
 
-    final data =
-        await ApiService.get("$url/v1/info/types", idToken!);
+    final data = await ApiService.get("$url/v1/info/types", idToken!);
 
     if (data != null) {
       setState(() {
@@ -77,60 +77,73 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
   }
 
   Future<void> _sendRequest() async {
-  final userModel = Provider.of<UserModel>(context, listen: false);
-  final idToken = userModel.idToken;
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final idToken = userModel.idToken;
 
-  if (selectedCategory == null || selectedType == null) {
-    _showDialog(
-      'Error',
-      'Por favor selecciona una categoría y un tipo de solicitud.',
-    );
-    return;
+    if (selectedCategory == null || selectedType == null) {
+      await _showDialog(
+        'Error',
+        'Por favor selecciona una categoría y un tipo de solicitud.',
+      );
+      return;
+    }
+
+    final body = {
+      "type": selectedType,
+      "subject": _subjectController.text,
+      "message": _bodyController.text,
+    };
+
+    final postUrl = "$url/v1/icso/${selectedCategory!.token}/ticket";
+
+    final response = await ApiService.post(postUrl, idToken!, body);
+
+    if (response != null) {
+      await _showDialog('Éxito', 'Solicitud enviada exitosamente.');
+      _resetFields(); // Vaciar los campos después de enviar
+
+      // Después de cerrar el diálogo, navegamos a "Mis Solicitudes"
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MisSolicitudesScreen()),
+      );
+    } else {
+      await _showDialog(
+          'Error', 'No se pudo enviar la solicitud. Inténtalo de nuevo.');
+    }
   }
 
-  final body = {
-    "type": selectedType,
-    "subject": _subjectController.text,
-    "message": _bodyController.text,
-  };
-
-  final postUrl = "$url/v1/icso/${selectedCategory!.token}/ticket";
-
-  final response = await ApiService.post(postUrl, idToken!, body);
-
-  if (response != null) {
-    _showDialog('Éxito', 'Solicitud enviada exitosamente.');
-    _resetFields(); // Vaciar los campos después de enviar
-  } else {
-    _showDialog('Error', 'No se pudo enviar la solicitud. Inténtalo de nuevo.');
+  void _resetFields() {
+    setState(() {
+      // Vaciar los campos de texto
+      _subjectController.clear();
+      _bodyController.clear();
+      // Reiniciar las selecciones
+      selectedCategory = null;
+      selectedType = null;
+      types = [];
+    });
   }
-}
 
-void _resetFields() {
-  setState(() {
-    // Vaciar los campos de texto
-    _subjectController.clear();
-    _bodyController.clear();
-    // Reiniciar las selecciones
-    selectedCategory = null;
-    selectedType = null;
-    types = [];
-  });
-}
-
-  void _showDialog(String title, String message) {
-    showDialog(
+  Future<void> _showDialog(String title, String message) async {
+    return showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+      barrierDismissible:
+          false, // El diálogo no se puede cerrar tocando fuera de él
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 

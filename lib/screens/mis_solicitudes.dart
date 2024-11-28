@@ -290,6 +290,24 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
                         color: Colors.grey.shade700,
                       ),
                     ),
+
+                    // solo debe verse si hay una respuesta
+                    Text(
+                      'Respuesta:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      solicitud.response ?? 'Sin respuesta',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    //
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
