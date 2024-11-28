@@ -1,8 +1,8 @@
-import 'package:appcm202402/screens/login_screen.dart';
+import 'package:appcm202402/NOTMODULARIZED/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart'; // Firebase core package
-import '../utils/user_data.dart'; // UserModel
+import 'NOTMODULARIZED/utils/user_data.dart'; // UserModel
 
 void main() async {
   // Asegúrate de inicializar los bindings de Flutter antes de Firebase
