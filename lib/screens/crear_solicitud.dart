@@ -182,6 +182,16 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
                     }
                   },
                 ),
+                const SizedBox(height: 8.0),
+                // Mostrar la descripción de la categoría seleccionada
+                if (selectedCategory != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(
+                      selectedCategory!.description,
+                      style: TextStyle(fontSize: 12.0, color: Colors.grey),
+                    ),
+                  ),
                 const SizedBox(height: 16.0),
                 if (isLoadingTypes)
                   const Center(child: CircularProgressIndicator())
