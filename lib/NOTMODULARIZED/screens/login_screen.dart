@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart'; // Google Fonts for custom font
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'home_screen.dart';
-import '../services/google_services.dart';
+import '../../features/data/data_sources/Google/google_services.dart';
 import 'package:sign_in_button/sign_in_button.dart'; // Using the SignInButton package
-import '../utils/user_data.dart'; // Import UserModel
+import '../../features/data/models/user_model.dart'; // Import UserModel
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

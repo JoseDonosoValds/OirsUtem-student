@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+//import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:logger/logger.dart';
 import '../services/api_services.dart'; // Importar ApiService
-import '../utils/user_data.dart'; // Importar UserModel
-import '../utils/navbar.dart'; // Importar el Navbar
+//import '../../features/data/models/user_model.dart'; // Importar UserModel
+//import '../utils/navbar.dart'; // Importar el Navbar
 import 'crear_solicitud.dart'; // Importar la pantalla CrearSolicitudScreen
 import '../utils/classes/get/info_categories.dart'; // Importar la clase CategoryTicketTypes
 import '../utils/classes/get/ticket_token_tickets.dart'; // Importar la clase OwnTickets
-import '../utils/appbar.dart'; // Importar el AppBar personalizado
+//import '../utils/appbar.dart'; // Importar el AppBar personalizado
 
 class MisSolicitudesScreen extends StatefulWidget {
   const MisSolicitudesScreen({super.key});

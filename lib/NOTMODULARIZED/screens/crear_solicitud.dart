@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_services.dart'; // Importar ApiService
-import '../utils/user_data.dart'; // Importar UserModel
+//import '../../features/data/models/user_model.dart'; // Importar UserModel
 import '../utils/navbar.dart'; // Importar el Navbar
 import '../utils/classes/get/info_categories.dart'; // Importar la clase para manejar las categorías
 import '../utils/appbar.dart'; // Importar el AppBar personalizado

@@ -3,11 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../utils/classes/get/info_categories.dart';
-import '../services/google_services.dart'; // Importar GoogleServices
+import '../../features/data/data_sources/Google/google_services.dart'; // Importar GoogleServices
 import '../services/api_services.dart'; // Importar ApiService
-import '../utils/user_data.dart';
-import '../utils/navbar.dart';
-import '../utils/appbar.dart';
+import '../../features/data/models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -243,7 +241,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Inicio'),
       body: Stack(
         children: [
           Padding(
@@ -321,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 final confirmed = await _showLogoutConfirmationDialog(context);
                 if (confirmed) {
-                  await GoogleServices.signOut(userModel);
+                  await GoogleServices.signOut();
                 }
               },
               tooltip: 'Cerrar Sesión',
@@ -331,7 +328,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: Navbar(currentIndex: 0),
     );
   }
 
