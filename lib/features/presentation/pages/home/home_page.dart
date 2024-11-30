@@ -7,7 +7,7 @@ import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
 import 'widgets/widgets.dart'; // Importamos el widget de solicitud
 import '/features/domain/entities/category_entity.dart';
 import '/features/data/data_sources/local/sharedPreferences.dart'; // Importar ApiService
-import '/core/core.dart';
+// import '/core/core.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
