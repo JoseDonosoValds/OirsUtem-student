@@ -7,12 +7,12 @@ class TypeDropdown extends StatelessWidget {
   final ValueChanged<String?> onTypeChanged;
 
   const TypeDropdown({
-    Key? key,
+    super.key,
     required this.isLoading,
     required this.types,
     required this.selectedType,
     required this.onTypeChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

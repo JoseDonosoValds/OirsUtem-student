@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
-import '/features/data/data_sources/Google/google_services.dart';
 import '/features/data/data_sources/api_oirs/oirsInfoService.dart';
 import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
 import 'widgets/widgets.dart'; // Importamos el widget de solicitud
@@ -12,7 +11,7 @@ import '/features/data/data_sources/local/sharedPreferences.dart'; // Importar A
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  static final Logger _logger = Logger();
+  static final Logger _logger = Logger(); // Instancia de Logger, luego usarlo
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -42,8 +41,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchCategories() async {
-    final _infoService = InfoService();
-    final data = await _infoService.getCategories(); // Obtener las categorías
+    final infoService = InfoService();
+    final data = await infoService.getCategories(); // Obtener las categorías
 
     if (data.isNotEmpty) {
       setState(() {
@@ -63,8 +62,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadDisplayName() async {
     String? name = await StorageService.getValue('displayName');
     setState(() {
-      displayName = name ??
-          'Usuario'; // Si no hay displayName, usamos un valor por defecto
+      displayName = name; // Si no hay displayName, usamos un valor por defecto
     });
   }
 
@@ -107,7 +105,7 @@ class _HomePageState extends State<HomePage> {
       // Aquí usamos la función createTicket del servicio IcsoService
       final response = await service.createTicket(headers, body);
 
-      if (response != null && response['status'] == 'success') {
+      if (response['success']) {
         _showDialog('Éxito', 'Solicitud enviada exitosamente.');
       } else {
         _showDialog(
@@ -186,10 +184,10 @@ class _HomePageState extends State<HomePage> {
                       _bodyController.text,
                     );
                   },
-                  child: const Text('Enviar Solicitud'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF04347c),
                   ),
+                  child: const Text('Enviar Solicitud'),
                 ),
               ],
             ),

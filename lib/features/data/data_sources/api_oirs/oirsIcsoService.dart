@@ -89,12 +89,19 @@ class IcsoService extends BaseService {
     final ticketToken = headers['ticketToken'];
     try {
       final response = await delete('$url/$ticketToken/ticket');
-      final Map<String, dynamic> deletedTicket = _handleResponse(response);
-      _logger.d(deletedTicket);
-      return deletedTicket;
+
+      _logger.d('Response for delete ticket: ${response.statusCode}');
+      // status 204 significa que se eliminó correctamente
+      if (response.statusCode == 204) {
+        return {'success': true};
+      } else {
+        return {'success': false};
+      }
+      // retornamos success
+
     } catch (error) {
-      _logger.e('Error al eliminar el ticket: $error');
-      throw Exception('Failed to delete ticket: $error');
+      _logger.e('Error al eliminar el ticket ICSO: $error');
+      throw Exception('Failed to delete ticket ICSO: $error');
     }
   }
 

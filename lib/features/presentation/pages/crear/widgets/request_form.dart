@@ -5,10 +5,10 @@ class RequestForm extends StatelessWidget {
   final TextEditingController bodyController;
 
   const RequestForm({
-    Key? key,
+    super.key,
     required this.subjectController,
     required this.bodyController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

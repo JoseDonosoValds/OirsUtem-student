@@ -13,7 +13,7 @@ import '/core/core.dart'; // Importar tu tema y estilos
 import '/features/domain/entities/category_entity.dart'; // Asegúrate de importar tus modelos
 
 class CrearSolicitudScreen extends StatefulWidget {
-  const CrearSolicitudScreen({Key? key}) : super(key: key);
+  const CrearSolicitudScreen({super.key});
 
   @override
   _CrearSolicitudScreenState createState() => _CrearSolicitudScreenState();
@@ -85,29 +85,8 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
   }
 
   Future<void> _sendRequest(
-      String? type, String? catToken, String subject, String message) async {
+      String type, String catToken, String subject, String message) async {
     final service = IcsoService();
-
-    // Validaciones previas
-    if (catToken == null || catToken.isEmpty) {
-      _showDialog('Error', 'Por favor selecciona una categoría.');
-      return;
-    }
-
-    if (type == null || type.isEmpty) {
-      _showDialog('Error', 'Por favor selecciona un tipo de solicitud.');
-      return;
-    }
-
-    if (subject.isEmpty) {
-      _showDialog('Error', 'El campo "Asunto" no puede estar vacío.');
-      return;
-    }
-
-    if (message.isEmpty) {
-      _showDialog('Error', 'El campo "Mensaje" no puede estar vacío.');
-      return;
-    }
 
     final headers = {
       'categoryToken': catToken,
@@ -139,11 +118,10 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
 
       if (response['success']) {
         _showDialog('Éxito', 'Solicitud enviada exitosamente.');
-        // Limpiar campos después de enviar exitosamente
         _resetFields();
-        // Agregar un pequeño retraso para cerrar el diálogo antes de cambiar de pestaña
+        // Redirigir después de un pequeño retraso
         Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).pop(); // Cerrar CrearSolicitudScreen()
+          Navigator.of(context).pop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => const BottomNavBar(),
           ));
@@ -154,8 +132,7 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
       }
     } catch (error, stackTrace) {
       _logger.e('Error al enviar la solicitud $error, $stackTrace');
-      Navigator.of(context, rootNavigator: true)
-          .pop(); // Cerrar el indicador de carga
+      Navigator.of(context, rootNavigator: true).pop();
       _showDialog(
           'Error', 'No se pudo enviar la solicitud. Inténtalo más tarde.');
     }
@@ -221,7 +198,8 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
                 ),
                 if (selectedCategory != null)
                   Text(selectedCategory!.description,
-                      style: TextStyle(fontSize: 12.0, color: Colors.grey)),
+                      style:
+                          const TextStyle(fontSize: 12.0, color: Colors.grey)),
                 const SizedBox(height: 16.0),
                 TypeDropdown(
                   isLoading: isLoadingTypes,
@@ -242,7 +220,30 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Aquí se llama a _sendRequest cuando el botón es presionado
+                      if (selectedCategory == null) {
+                        _showDialog(
+                            'Error', 'Por favor selecciona una categoría.');
+                        return;
+                      }
+
+                      if (selectedType == null) {
+                        _showDialog('Error',
+                            'Por favor selecciona un tipo de solicitud.');
+                        return;
+                      }
+
+                      if (_subjectController.text.isEmpty) {
+                        _showDialog(
+                            'Error', 'El campo "Asunto" no puede estar vacío.');
+                        return;
+                      }
+
+                      if (_bodyController.text.isEmpty) {
+                        _showDialog('Error',
+                            'El campo "Mensaje" no puede estar vacío.');
+                        return;
+                      }
+
                       _sendRequest(
                         selectedType!,
                         selectedCategory!.token,

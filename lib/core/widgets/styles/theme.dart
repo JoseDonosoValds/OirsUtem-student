@@ -46,8 +46,6 @@ class AppTheme {
     onSecondary: Colors.black,
     secondaryContainer: _secondaryContainerLight,
     onSecondaryContainer: Colors.black,
-    background: _backgroundLight,
-    onBackground: _textLight,
     surface: _surfaceLight,
     onSurface: _textLight,
     error: Colors.redAccent,
@@ -64,8 +62,6 @@ class AppTheme {
     onSecondary: Colors.white,
     secondaryContainer: _secondaryContainerDark,
     onSecondaryContainer: Colors.white,
-    background: _backgroundDark,
-    onBackground: _textDark,
     surface: _surfaceDark,
     onSurface: _textDark,
     error: Colors.redAccent,
@@ -76,13 +72,13 @@ class AppTheme {
   static ThemeData getLight(BuildContext context) => ThemeData(
         colorScheme: _lightColorScheme,
         useMaterial3: true, // Usar Material Design 3
-        scaffoldBackgroundColor: _lightColorScheme.background,
+        scaffoldBackgroundColor: _lightColorScheme.surface,
         canvasColor: _lightColorScheme.surface,
         cardColor: _cardLight, // Color de fondo para las tarjetas
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: _lightColorScheme.surface,
           indicatorColor: _lightColorScheme.primaryContainer,
-          labelTextStyle: MaterialStateProperty.all(
+          labelTextStyle: WidgetStateProperty.all(
             GoogleFonts.roboto(
               fontSize: 12,
               color: _lightColorScheme.onSurface,
@@ -91,7 +87,7 @@ class AppTheme {
           ),
         ),
         textTheme: GoogleFonts.robotoTextTheme()
-            .apply(bodyColor: _lightColorScheme.onBackground),
+            .apply(bodyColor: _lightColorScheme.onSurface),
         appBarTheme: AppBarTheme(
           backgroundColor: _lightColorScheme.primary,
           iconTheme: IconThemeData(color: _lightColorScheme.onPrimary),
@@ -107,13 +103,13 @@ class AppTheme {
   static ThemeData getDark(BuildContext context) => ThemeData(
         colorScheme: _darkColorScheme,
         useMaterial3: true, // Usar Material Design 3
-        scaffoldBackgroundColor: _darkColorScheme.background,
+        scaffoldBackgroundColor: _darkColorScheme.surface,
         canvasColor: _darkColorScheme.surface,
         cardColor: _cardDark, // Color de fondo para las tarjetas
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: _darkColorScheme.surface,
           indicatorColor: _darkColorScheme.primaryContainer,
-          labelTextStyle: MaterialStateProperty.all(
+          labelTextStyle: WidgetStateProperty.all(
             GoogleFonts.roboto(
               fontSize: 12,
               color: _darkColorScheme.onSurface,
@@ -122,7 +118,7 @@ class AppTheme {
           ),
         ),
         textTheme: GoogleFonts.robotoTextTheme()
-            .apply(bodyColor: _darkColorScheme.onBackground),
+            .apply(bodyColor: _darkColorScheme.onSurface),
         appBarTheme: AppBarTheme(
           backgroundColor: _darkColorScheme.primary,
           iconTheme: IconThemeData(color: _darkColorScheme.onPrimary),

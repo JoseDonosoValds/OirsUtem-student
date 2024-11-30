@@ -43,21 +43,21 @@ abstract class AppException implements Exception {
 
 // Excepciones personalizadas
 class NotFoundException extends AppException {
-  NotFoundException(String message) : super(message);
+  NotFoundException(super.message);
 }
 
 class UnauthorizedException extends AppException {
-  UnauthorizedException(String message) : super(message);
+  UnauthorizedException(super.message);
 }
 
 class BadRequestException extends AppException {
-  BadRequestException(String message) : super(message);
+  BadRequestException(super.message);
 }
 
 class InternalServerErrorException extends AppException {
-  InternalServerErrorException(String message) : super(message);
+  InternalServerErrorException(super.message);
 }
 
 class TimeoutException extends AppException {
-  TimeoutException(String message) : super(message);
+  TimeoutException(super.message);
 }

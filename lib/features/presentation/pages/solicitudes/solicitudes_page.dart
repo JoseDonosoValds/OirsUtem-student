@@ -33,29 +33,25 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
 
   Future<void> _fetchCategoriesAndSolicitudes() async {
     try {
-      final _infoService = InfoService();
-      final _icsoService = IcsoService();
+      final infoService = InfoService();
+      final icsoService = IcsoService();
 
       // Obtener categorías
-      final dataCategories = await _infoService.getCategories();
-      if (dataCategories != null) {
-        setState(() {
-          categories = dataCategories.map<CategoryTicketTypes>((item) {
-            return CategoryTicketTypes.fromJson(item);
-          }).toList();
-        });
-      }
-
+      final dataCategories = await infoService.getCategories();
+      setState(() {
+        categories = dataCategories.map<CategoryTicketTypes>((item) {
+          return CategoryTicketTypes.fromJson(item);
+        }).toList();
+      });
+    
       // Obtener todas las solicitudes (Tickets)
-      final _tickets = await _icsoService.getAllTickets();
-      if (_tickets != null) {
-        setState(() {
-          allSolicitudes = List<Ticket>.from(_tickets);
-          filteredSolicitudes = List<Ticket>.from(_tickets);
-          isLoading = false;
-        });
-      }
-    } catch (error) {
+      final tickets = await icsoService.getAllTickets();
+      setState(() {
+        allSolicitudes = List<Ticket>.from(tickets);
+        filteredSolicitudes = List<Ticket>.from(tickets);
+        isLoading = false;
+      });
+        } catch (error) {
       setState(() {
         isLoading = false;
       });
@@ -110,7 +106,7 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
                         isSelected: selectedFilter == category.name,
                         onTap: () => _changeFilter(category.name),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

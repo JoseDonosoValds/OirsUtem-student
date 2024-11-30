@@ -1,10 +1,9 @@
 import 'package:appcm202402/core/widgets/navigation/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import '/features/data/data_sources/Google/google_services.dart'; // Asegúrate de que la ruta es correcta
-import '/features/presentation/pages/views.dart';
 
 class LoginButton extends StatelessWidget {
-  const LoginButton({Key? key}) : super(key: key);
+  const LoginButton({super.key});
 
   @override
   Widget build(BuildContext context) {

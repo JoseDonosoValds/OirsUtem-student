@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/core/core.dart'; // Para el tema y estilos
+// Para el tema y estilos
 import '/features/presentation/pages/views.dart';
 
 class AddSolicitudButton extends StatelessWidget {

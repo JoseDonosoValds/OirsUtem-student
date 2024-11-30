@@ -7,11 +7,11 @@ class CategoryDropdown extends StatelessWidget {
   final ValueChanged<CategoryTicketTypes?> onCategoryChanged;
 
   const CategoryDropdown({
-    Key? key,
+    super.key,
     required this.categories,
     required this.selectedCategory,
     required this.onCategoryChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
