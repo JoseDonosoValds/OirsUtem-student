@@ -43,7 +43,7 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
           return CategoryTicketTypes.fromJson(item);
         }).toList();
       });
-    
+
       // Obtener todas las solicitudes (Tickets)
       final tickets = await icsoService.getAllTickets();
       setState(() {
@@ -51,7 +51,7 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
         filteredSolicitudes = List<Ticket>.from(tickets);
         isLoading = false;
       });
-        } catch (error) {
+    } catch (error) {
       setState(() {
         isLoading = false;
       });
@@ -69,6 +69,13 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
             .where((solicitud) => solicitud.category.name == filter)
             .toList();
       }
+    });
+  }
+
+  // Ahora el callback acepta un Ticket completo
+  void _deleteSolicitud(Ticket solicitud) {
+    setState(() {
+      filteredSolicitudes.removeWhere((item) => item.token == solicitud.token);
     });
   }
 
@@ -123,6 +130,8 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
                           final solicitud = filteredSolicitudes[index];
                           return SolicitudCard(
                             solicitud: solicitud,
+                            onDelete:
+                                _deleteSolicitud, // Ahora pasamos el Ticket
                           );
                         },
                       ),

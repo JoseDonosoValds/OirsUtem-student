@@ -13,7 +13,10 @@ final _logger = Logger();
 class SolicitudCard extends StatefulWidget {
   final Ticket solicitud;
 
-  const SolicitudCard({required this.solicitud, super.key});
+  final Function(Ticket) onDelete; // Callback para eliminar el ticket
+
+  const SolicitudCard(
+      {required this.solicitud, required this.onDelete, super.key});
 
   @override
   _SolicitudCardState createState() => _SolicitudCardState();
@@ -210,7 +213,6 @@ class _SolicitudCardState extends State<SolicitudCard> {
     );
   }
 
-  // Seleccionar archivo
   // Seleccionar archivo
   Future<void> _pickFile(BuildContext context) async {
     try {
@@ -547,7 +549,8 @@ class _SolicitudCardState extends State<SolicitudCard> {
                 _deleteTicket();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
               ),
               child: const Text('Eliminar'),
             ),
@@ -555,6 +558,7 @@ class _SolicitudCardState extends State<SolicitudCard> {
         );
       },
     );
+    ;
   }
 
   Future<void> _deleteTicket() async {
@@ -571,6 +575,9 @@ class _SolicitudCardState extends State<SolicitudCard> {
       if (response['success']) {
         _logger.d("Ticket eliminado exitosamente.");
         _showDialog('Éxito', 'El ticket fue eliminado exitosamente.');
+
+        // Llamamos al callback para eliminar el ticket de la lista en el widget padre
+        widget.onDelete(widget.solicitud);
       } else {
         _logger.e("Error al eliminar el ticket.");
         _showDialog('Error', 'No se pudo eliminar el ticket.');
@@ -597,6 +604,13 @@ class _SolicitudCardState extends State<SolicitudCard> {
       if (response['success']) {
         _logger.d("Solicitud actualizada exitosamente.");
         _showDialog('Éxito', 'La solicitud fue actualizada exitosamente.');
+
+        // Aquí usamos setState para actualizar la UI con los nuevos valores
+        setState(() {
+          widget.solicitud.subject = subject;
+          widget.solicitud.message = message;
+          widget.solicitud.type = type;
+        });
       } else {
         _logger.e("Error al actualizar solicitud: ${response['message']}");
         _showDialog('Error', 'Hubo un error al actualizar la solicitud.');

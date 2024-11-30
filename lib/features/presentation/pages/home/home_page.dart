@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
+import '/features/presentation/pages/views.dart'; 
+import '/features/data/data_sources/Google/google_services.dart'; 
 import '/features/data/data_sources/api_oirs/oirsInfoService.dart';
 import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
-import 'widgets/widgets.dart'; // Importamos el widget de solicitud
+import 'widgets/widgets.dart'; 
 import '/features/domain/entities/category_entity.dart';
 import '/features/data/data_sources/local/sharedPreferences.dart'; // Importar ApiService
 // import '/core/core.dart';
@@ -11,7 +13,7 @@ import '/features/data/data_sources/local/sharedPreferences.dart'; // Importar A
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  static final Logger _logger = Logger(); // Instancia de Logger, luego usarlo
+  static final Logger _logger = Logger();
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -29,8 +31,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories(); // Cargar categorías desde el API
-    _loadDisplayName(); // Cargar el displayName desde SharedPreferences
+    _fetchCategories();
+    _loadDisplayName();
   }
 
   @override
@@ -42,7 +44,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _fetchCategories() async {
     final infoService = InfoService();
-    final data = await infoService.getCategories(); // Obtener las categorías
+    final data = await infoService.getCategories();
 
     if (data.isNotEmpty) {
       setState(() {
@@ -58,11 +60,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Función para cargar el displayName desde SharedPreferences
   Future<void> _loadDisplayName() async {
     String? name = await StorageService.getValue('displayName');
     setState(() {
-      displayName = name; // Si no hay displayName, usamos un valor por defecto
+      displayName = name;
     });
   }
 
@@ -102,7 +103,6 @@ class _HomePageState extends State<HomePage> {
     };
 
     try {
-      // Aquí usamos la función createTicket del servicio IcsoService
       final response = await service.createTicket(headers, body);
 
       if (response['success']) {
@@ -185,7 +185,8 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF04347c),
+                    foregroundColor: const Color(0xFF04347c), // Texto rojo
+                    side: const BorderSide(color: Color(0xFF04347c)),
                   ),
                   child: const Text('Enviar Solicitud'),
                 ),
@@ -218,6 +219,19 @@ class _HomePageState extends State<HomePage> {
         false;
   }
 
+  // Método para mostrar la confirmación de cierre de sesión
+  Future<void> _handleLogout() async {
+    bool shouldLogout = await _showLogoutConfirmationDialog(context);
+    if (shouldLogout) {
+      await GoogleServices.signOut();
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -225,9 +239,8 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: isLoadingCategories
             ? const Center(child: CircularProgressIndicator())
-            : ListView(
+            : Column(
                 children: [
-                  // Mostrar el displayName después de cargarlo
                   Text(
                     'Hola! $displayName',
                     style: GoogleFonts.poppins(
@@ -283,6 +296,20 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(child: Container()),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.logout),
+                        color: Colors.red,
+                        onPressed: _handleLogout,
+                        iconSize: 30,
+                      ),
+                    ),
                   ),
                 ],
               ),

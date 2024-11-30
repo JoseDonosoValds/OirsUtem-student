@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'widgets/category_dropdown.dart';
 import 'widgets/type_dropdown.dart';
-import 'package:logger/logger.dart'; // Importar Logger
+import 'package:logger/logger.dart';
 import 'widgets/request_form.dart';
-import '/features/data/data_sources/api_oirs/oirsInfoService.dart'; // Importar ApiService
+import '/features/data/data_sources/api_oirs/oirsInfoService.dart';
 import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
 import '/core/core.dart'; // Importar tu tema y estilos
 // import '/features/presentation/pages/views.dart';
 
-// import '../services/api_services.dart'; // Asegúrate de que tu servicio esté en su lugar
-// import 'mis_solicitudes.dart'; // Pantalla de Mis Solicitudes
-import '/features/domain/entities/category_entity.dart'; // Asegúrate de importar tus modelos
+// import '../services/api_services.dart'; //
+// import 'mis_solicitudes.dart'; //
+import '/features/domain/entities/category_entity.dart';
 
 class CrearSolicitudScreen extends StatefulWidget {
   const CrearSolicitudScreen({super.key});
@@ -31,7 +31,6 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
 
-  // Instancia del InfoService
   final InfoService _infoService = InfoService();
 
   @override
@@ -252,6 +251,22 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
                       );
                     },
                     child: const Text('Enviar Solicitud'),
+                  ),
+                ),
+                const SizedBox(height: 10), // Espacio entre los botones
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Cerrar la pantalla actual
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.red, // Texto rojo
+                      side: const BorderSide(
+                          color: Colors.red, width: 1), // Borde rojo
+                    ),
+                    child: const Text('Cancelar'),
                   ),
                 ),
               ],
