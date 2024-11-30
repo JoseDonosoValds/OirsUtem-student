@@ -15,7 +15,7 @@ class IcsoService extends BaseService {
 
   // Manejo genérico de respuestas JSON
   dynamic _handleResponse(http.Response response) {
-    if (response.statusCode == 200) {
+    if (response.statusCode > 200 || response.statusCode <= 300) {
       return json.decode(utf8.decode(response.bodyBytes));
     } else {
       _logger.e('Error en la solicitud: ${response.statusCode}');

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'widgets/category_dropdown.dart';
 import 'widgets/type_dropdown.dart';
+import 'package:logger/logger.dart'; // Importar Logger
 import 'widgets/request_form.dart';
-import '/features/data/data_sources/api_oirs/oirsInfoService.dart';
+import '/features/data/data_sources/api_oirs/oirsInfoService.dart'; // Importar ApiService
 import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
-import '/features/domain/entities/category_entity.dart';
+import '/core/core.dart'; // Importar tu tema y estilos
+// import '/features/presentation/pages/views.dart';
+
+// import '../services/api_services.dart'; // Asegúrate de que tu servicio esté en su lugar
+// import 'mis_solicitudes.dart'; // Pantalla de Mis Solicitudes
+import '/features/domain/entities/category_entity.dart'; // Asegúrate de importar tus modelos
 
 class CrearSolicitudScreen extends StatefulWidget {
   const CrearSolicitudScreen({Key? key}) : super(key: key);
@@ -15,8 +20,6 @@ class CrearSolicitudScreen extends StatefulWidget {
 }
 
 class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
-  final Logger _logger = Logger();
-
   List<CategoryTicketTypes> categories = [];
   List<String> types = [];
   CategoryTicketTypes? selectedCategory;
@@ -24,9 +27,11 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
   bool isLoadingCategories = true;
   bool isLoadingTypes = false;
 
+  final Logger _logger = Logger();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
 
+  // Instancia del InfoService
   final InfoService _infoService = InfoService();
 
   @override
@@ -35,13 +40,7 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
     _fetchCategories();
   }
 
-  @override
-  void dispose() {
-    _subjectController.dispose();
-    _bodyController.dispose();
-    super.dispose();
-  }
-
+  // Obtener categorías
   Future<void> _fetchCategories() async {
     try {
       final data = await _infoService.getCategories();
@@ -58,7 +57,6 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
         });
       }
     } catch (error) {
-      _logger.e('Error al cargar las categorías: $error');
       _showDialog('Error', 'No se pudieron cargar las categorías.');
       setState(() {
         isLoadingCategories = false;
@@ -66,6 +64,7 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
     }
   }
 
+  // Obtener tipos según la categoría seleccionada
   Future<void> _fetchTypes(String categoryToken) async {
     setState(() {
       isLoadingTypes = true;
@@ -78,7 +77,6 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
         isLoadingTypes = false;
       });
     } catch (error) {
-      _logger.e('Error al cargar los tipos de solicitud: $error');
       _showDialog('Error', 'No se pudieron cargar los tipos de solicitud.');
       setState(() {
         isLoadingTypes = false;
@@ -87,11 +85,27 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
   }
 
   Future<void> _sendRequest(
-      String type, String? catToken, String subject, String message) async {
+      String? type, String? catToken, String subject, String message) async {
     final service = IcsoService();
 
-    if (catToken == null || subject.isEmpty || message.isEmpty) {
-      _showDialog('Error', 'Por favor llena todos los campos antes de enviar.');
+    // Validaciones previas
+    if (catToken == null || catToken.isEmpty) {
+      _showDialog('Error', 'Por favor selecciona una categoría.');
+      return;
+    }
+
+    if (type == null || type.isEmpty) {
+      _showDialog('Error', 'Por favor selecciona un tipo de solicitud.');
+      return;
+    }
+
+    if (subject.isEmpty) {
+      _showDialog('Error', 'El campo "Asunto" no puede estar vacío.');
+      return;
+    }
+
+    if (message.isEmpty) {
+      _showDialog('Error', 'El campo "Mensaje" no puede estar vacío.');
       return;
     }
 
@@ -105,19 +119,56 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
       "message": message,
     };
 
+    // Mostrar un indicador de carga mientras se envía la solicitud
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
     try {
+      // Enviar la solicitud al servicio
       final response = await service.createTicket(headers, body);
 
-      if (response != null && response['status'] == 'success') {
+      // Cerrar el indicador de carga
+      Navigator.of(context, rootNavigator: true).pop();
+
+      if (response['success']) {
         _showDialog('Éxito', 'Solicitud enviada exitosamente.');
+        // Limpiar campos después de enviar exitosamente
+        _resetFields();
+        // Agregar un pequeño retraso para cerrar el diálogo antes de cambiar de pestaña
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop(); // Cerrar CrearSolicitudScreen()
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => const BottomNavBar(),
+          ));
+        });
       } else {
         _showDialog(
-            'Error', 'No se pudo enviar la solicitud. Inténtalo de nuevo.');
+            'Error', response['message'] ?? 'Ocurrió un error inesperado.');
       }
-    } catch (error) {
-      _logger.e('Error al enviar la solicitud: $error');
-      _showDialog('Error', 'Ocurrió un error al enviar la solicitud.');
+    } catch (error, stackTrace) {
+      _logger.e('Error al enviar la solicitud $error, $stackTrace');
+      Navigator.of(context, rootNavigator: true)
+          .pop(); // Cerrar el indicador de carga
+      _showDialog(
+          'Error', 'No se pudo enviar la solicitud. Inténtalo más tarde.');
     }
+  }
+
+  void _resetFields() {
+    setState(() {
+      _subjectController.clear();
+      _bodyController.clear();
+      selectedCategory = null;
+      selectedType = null;
+      types = [];
+    });
   }
 
   Future<void> _showDialog(String title, String message) async {
@@ -143,66 +194,67 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: MediaQuery.of(context).size.width * 0.05,
-            vertical: MediaQuery.of(context).size.height * 0.02,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CategoryDropdown(
-                categories: categories,
-                selectedCategory: selectedCategory,
-                onCategoryChanged: (category) {
-                  setState(() {
-                    selectedCategory = category;
-                    types = [];
-                    selectedType = null;
-                  });
-                  if (category != null) {
-                    _fetchTypes(category.token);
-                  }
-                },
-              ),
-              if (selectedCategory != null)
-                Text(
-                  selectedCategory!.description,
-                  style: const TextStyle(fontSize: 12.0, color: Colors.grey),
-                ),
-              const SizedBox(height: 16.0),
-              TypeDropdown(
-                isLoading: isLoadingTypes,
-                types: types,
-                selectedType: selectedType,
-                onTypeChanged: (type) {
-                  setState(() {
-                    selectedType = type;
-                  });
-                },
-              ),
-              RequestForm(
-                subjectController: _subjectController,
-                bodyController: _bodyController,
-              ),
-              const SizedBox(height: 16.0),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _sendRequest(
-                      selectedType!,
-                      selectedCategory!.token,
-                      _subjectController.text,
-                      _bodyController.text,
-                    );
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.05,
+              vertical: MediaQuery.of(context).size.height * 0.02,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CategoryDropdown(
+                  categories: categories,
+                  selectedCategory: selectedCategory,
+                  onCategoryChanged: (category) {
+                    setState(() {
+                      selectedCategory = category;
+                      types = [];
+                      selectedType = null;
+                    });
+                    if (category != null) {
+                      _fetchTypes(category.token);
+                    }
                   },
-                  child: const Text('Enviar Solicitud'),
                 ),
-              ),
-            ],
+                if (selectedCategory != null)
+                  Text(selectedCategory!.description,
+                      style: TextStyle(fontSize: 12.0, color: Colors.grey)),
+                const SizedBox(height: 16.0),
+                TypeDropdown(
+                  isLoading: isLoadingTypes,
+                  types: types,
+                  selectedType: selectedType,
+                  onTypeChanged: (type) {
+                    setState(() {
+                      selectedType = type;
+                    });
+                  },
+                ),
+                RequestForm(
+                  subjectController: _subjectController,
+                  bodyController: _bodyController,
+                ),
+                const SizedBox(height: 16.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Aquí se llama a _sendRequest cuando el botón es presionado
+                      _sendRequest(
+                        selectedType!,
+                        selectedCategory!.token,
+                        _subjectController.text,
+                        _bodyController.text,
+                      );
+                    },
+                    child: const Text('Enviar Solicitud'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

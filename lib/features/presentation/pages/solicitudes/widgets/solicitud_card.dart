@@ -1,10 +1,8 @@
-// widgets/solicitud_card.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '/core/core.dart'; // Importar AppTheme y StyleText
 import '/features/domain/entities/ticket_entity.dart';
-//import 'solicitud_detail_popup.dart';
 
-// Función privada
+// Función privada para mostrar los detalles de la solicitud
 void _showSolicitudDetailPopup(
     BuildContext context, Ticket solicitud, Color tipoColor) {
   showModalBottomSheet(
@@ -14,6 +12,8 @@ void _showSolicitudDetailPopup(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (BuildContext context) {
+      final theme = Theme.of(context);
+
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -21,27 +21,46 @@ void _showSolicitudDetailPopup(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Detalle de la solicitud
               Text(
                 'Detalle de la Solicitud',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF04347c),
+                style: StyleText.headlineSmall.copyWith(
+                  color: theme.colorScheme.primary, // Color del encabezado
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Token: ${solicitud.token}'),
-              Text('Tipo: ${solicitud.type}'),
-              Text('Asunto: ${solicitud.subject}'),
-              Text('Estado: ${solicitud.status}'),
-              Text('Mensaje: ${solicitud.message}'),
-              // Puedes agregar más detalles aquí si lo deseas
+              _buildDetailRow('Tipo:', solicitud.type, theme),
+              _buildDetailRow('Asunto:', solicitud.subject, theme),
+              _buildDetailRow('Mensaje:', solicitud.message, theme),
+              _buildDetailRow(
+                  'Respuesta:', solicitud.response ?? 'Sin respuesta', theme),
             ],
           ),
         ),
       );
     },
+  );
+}
+
+// Widget para construir cada fila de detalles
+Widget _buildDetailRow(String label, String content, ThemeData theme) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4.0),
+    child: RichText(
+      text: TextSpan(
+        text: '$label ',
+        style: StyleText.bodyBold.copyWith(
+          color: theme.colorScheme.onSurface, // Color de la etiqueta
+        ),
+        children: [
+          TextSpan(
+            text: content,
+            style: StyleText.body.copyWith(
+              color: theme.colorScheme.onSurface, // Color del contenido
+            ),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
@@ -52,26 +71,29 @@ class SolicitudCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String tipo = solicitud.type.toLowerCase();
-    String asunto = solicitud.subject;
-    String estado = solicitud.status;
-    String descripcion = solicitud.message;
-    String categoria = solicitud.category.name;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
+    // Determinar el color del borde según el tipo de solicitud
+    String tipo = solicitud.type.toLowerCase();
     Color tipoColor;
     switch (tipo) {
       case 'information':
-        tipoColor = const Color(0xFF316f8e);
+        tipoColor = AppTheme.getInformationColor(isDarkMode);
         break;
       case 'suggestion':
-        tipoColor = const Color(0xFF4d7032);
+        tipoColor = AppTheme.getSuggestionColor(isDarkMode);
         break;
       case 'claim':
-        tipoColor = const Color(0xFF9b6a2c);
+        tipoColor = AppTheme.getClaimColor(isDarkMode);
         break;
       default:
-        tipoColor = Colors.grey;
+        tipoColor = const Color.fromARGB(255, 255, 1, 1);
     }
+
+    // Colores dinámicos para la tarjeta
+    final cardColor = theme.cardColor;
+    final textColor = theme.colorScheme.onSurface;
 
     return GestureDetector(
       onTap: () => _showSolicitudDetailPopup(context, solicitud, tipoColor),
@@ -83,10 +105,10 @@ class SolicitudCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 6.0),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cardColor, // Fondo dinámico de la tarjeta
             borderRadius: BorderRadius.circular(8),
             border: Border(
-              left: BorderSide(color: tipoColor, width: 4),
+              left: BorderSide(color: tipoColor, width: 4), // Borde del tipo
             ),
           ),
           child: Padding(
@@ -95,29 +117,30 @@ class SolicitudCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      categoria,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: tipoColor,
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        solicitud.category.name, // Categoría de la solicitud
+                        style: StyleText.label.copyWith(
+                          color: tipoColor, // Color del texto según el tipo
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis, // Evitar overflow
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 4.0),
                       decoration: BoxDecoration(
-                        color: tipoColor,
+                        color: tipoColor, // Fondo del estado
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        estado,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        solicitud.status, // Estado de la solicitud
+                        style: StyleText.bodyBold.copyWith(
+                          color: Colors.white, // Texto blanco para el estado
                         ),
                       ),
                     ),
@@ -125,20 +148,23 @@ class SolicitudCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  asunto,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
+                  solicitud.subject, // Asunto de la solicitud
+                  style: StyleText.descriptionBold.copyWith(
+                    color: textColor, // Color dinámico del texto
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (descripcion.isNotEmpty)
+                if (solicitud.message.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(
-                      descripcion,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.grey,
+                      solicitud.message, // Mensaje de la solicitud
+                      style: StyleText.description.copyWith(
+                        color: textColor.withOpacity(0.7), // Texto con opacidad
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
               ],

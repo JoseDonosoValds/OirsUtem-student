@@ -1,16 +1,13 @@
-// widgets/filter_button.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FilterButton extends StatelessWidget {
   final String label;
-  final Color color;
   final bool isSelected;
   final VoidCallback onTap;
 
   const FilterButton({
     required this.label,
-    required this.color,
     required this.isSelected,
     required this.onTap,
     super.key,
@@ -18,6 +15,8 @@ class FilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -25,14 +24,23 @@ class FilterButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color.fromARGB(128, 7, 84, 98)
-              : color,
+              ? theme.colorScheme.primary.withOpacity(0.8)
+              : theme.colorScheme.surface.withOpacity(0.6), // Fondo dinámico
           borderRadius: BorderRadius.circular(15),
+          border: isSelected
+              ? Border.all(
+                  color: theme.colorScheme.primary, width: 1.5) // Borde activo
+              : Border.all(
+                  color: theme.colorScheme.onSurface
+                      .withOpacity(0.3), // Borde inactivo
+                  width: 1),
         ),
         child: Text(
           label,
           style: GoogleFonts.poppins(
-            color: const Color(0xFF04347c),
+            color: isSelected
+                ? theme.colorScheme.onPrimary // Texto seleccionado
+                : theme.colorScheme.onSurface, // Texto no seleccionado
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),

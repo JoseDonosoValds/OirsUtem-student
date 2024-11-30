@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '/core/core.dart'; // Importar tu tema y StyleText
 import 'package:logger/logger.dart';
 import './widgets/solicitud_card.dart';
 import './widgets/filter_button.dart';
+import './widgets/add_solicitud_button.dart'; // Importar el nuevo widget
 import '/features/domain/entities/category_entity.dart';
 import '/features/domain/entities/ticket_entity.dart';
-
-import '/features/data/data_sources/api_oirs/oirsInfoService.dart'; // Importar ApiService
+import '/features/data/data_sources/api_oirs/oirsInfoService.dart';
 import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
 
 class MisSolicitudesScreen extends StatefulWidget {
@@ -51,8 +51,7 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
       if (_tickets != null) {
         setState(() {
           allSolicitudes = List<Ticket>.from(_tickets);
-          filteredSolicitudes = List<Ticket>.from(
-              _tickets); // Inicializar con todas las solicitudes
+          filteredSolicitudes = List<Ticket>.from(_tickets);
           isLoading = false;
         });
       }
@@ -79,49 +78,64 @@ class _MisSolicitudesScreenState extends State<MisSolicitudesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  FilterButton(
-                    label: 'Todas',
-                    color: Colors.blueAccent,
-                    isSelected: selectedFilter == 'Todas',
-                    onTap: () => _changeFilter('Todas'),
-                  ),
-                  ...categories.map((category) {
-                    return FilterButton(
-                      label: category.name,
-                      color: Colors.grey.shade300,
-                      isSelected: selectedFilter == category.name,
-                      onTap: () => _changeFilter(category.name),
-                    );
-                  }).toList(),
-                ],
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Mis Solicitudes',
+                style: StyleText.headlineSmall.copyWith(
+                  color: theme.colorScheme.primary, // Color dinámico
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      controller: _scrollController,
-                      itemCount: filteredSolicitudes.length,
-                      itemBuilder: (context, index) {
-                        final solicitud = filteredSolicitudes[index];
-                        return SolicitudCard(solicitud: solicitud);
-                      },
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    FilterButton(
+                      label: 'Todas',
+                      isSelected: selectedFilter == 'Todas',
+                      onTap: () => _changeFilter('Todas'),
                     ),
-            ),
-          ],
+                    ...categories.map((category) {
+                      return FilterButton(
+                        label: category.name,
+                        isSelected: selectedFilter == category.name,
+                        onTap: () => _changeFilter(category.name),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        itemCount: filteredSolicitudes.length,
+                        itemBuilder: (context, index) {
+                          final solicitud = filteredSolicitudes[index];
+                          return SolicitudCard(
+                            solicitud: solicitud,
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
+      floatingActionButton: const AddSolicitudButton(), // Añadir el botón aquí
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '/core/core.dart';
-import 'package:appcm202402/features/presentation/pages/login/widgets/login_button.dart'; // Asegúrate de que la ruta sea correcta
-import 'package:appcm202402/features/presentation/pages/login/widgets/login_form.dart'; // Si usas un formulario de login
+import '/features/presentation/pages/login/widgets/login_button.dart'; // 
+import '/features/presentation/pages/login/widgets/login_form.dart'; // 
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
