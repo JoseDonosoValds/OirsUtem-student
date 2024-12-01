@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-OwnTickets ownTicketsFromJson(String str) =>
-    OwnTickets.fromJson(json.decode(str));
+Ticket TicketFromJson(String str) =>
+    Ticket.fromJson(json.decode(str));
 
-String ownTicketsToJson(OwnTickets data) => json.encode(data.toJson());
+String TicketToJson(Ticket data) => json.encode(data.toJson());
 
-class OwnTickets {
+class Ticket {
   String type;
   String subject;
   String message;
@@ -17,7 +17,7 @@ class OwnTickets {
   DateTime created;
   DateTime updated;
 
-  OwnTickets({
+  Ticket({
     required this.type,
     required this.subject,
     required this.message,
@@ -30,7 +30,7 @@ class OwnTickets {
     required this.updated,
   });
 
-  factory OwnTickets.fromJson(Map<String, dynamic> json) => OwnTickets(
+  factory Ticket.fromJson(Map<String, dynamic> json) => Ticket(
         type: json["type"],
         subject: json["subject"],
         message: json["message"],
