@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
+//import 'package:logger/logger.dart';
 import '/features/presentation/pages/views.dart';
 import '/features/data/data_sources/Google/google_services.dart';
 import '/features/data/data_sources/api_oirs/oirsInfoService.dart';
 import '/features/data/data_sources/api_oirs/oirsIcsoService.dart';
 import 'widgets/widgets.dart';
 import '/features/domain/entities/category_entity.dart';
-import '/features/data/data_sources/local/sharedPreferences.dart'; // Importar ApiService
-// import '/core/core.dart';
+import '/features/data/data_sources/local/sharedPreferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  static final Logger _logger = Logger();
+  //static final Logger _logger = Logger();
 
   @override
   _HomePageState createState() => _HomePageState();

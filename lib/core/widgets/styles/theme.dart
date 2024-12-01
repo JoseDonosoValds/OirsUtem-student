@@ -12,8 +12,8 @@ class AppTheme {
   static const Color _secondaryContainerLight = Color(0xFFFFE9D1);
   static const Color _secondaryContainerDark = Color.fromARGB(255, 7, 114, 160);
 
-  static const Color _backgroundLight = Color(0xFFFAFAFA);
-  static const Color _backgroundDark = Color(0xFF171918);
+  //static const Color _backgroundLight = Color(0xFFFAFAFA); Segun Dart, está depreciado
+  //static const Color _backgroundDark = Color(0xFF171918);
 
   static const Color _surfaceLight = Color.fromARGB(255, 237, 237, 237);
   static const Color _surfaceDark = Color.fromARGB(255, 55, 55, 55);

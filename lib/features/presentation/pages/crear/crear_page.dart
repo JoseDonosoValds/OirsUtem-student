@@ -253,18 +253,16 @@ class _CrearSolicitudScreenState extends State<CrearSolicitudScreen> {
                     child: const Text('Enviar Solicitud'),
                   ),
                 ),
-                const SizedBox(height: 10), // Espacio entre los botones
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Cerrar la pantalla actual
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.red, // Texto rojo
-                      side: const BorderSide(
-                          color: Colors.red, width: 1), // Borde rojo
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red, width: 1),
                     ),
                     child: const Text('Cancelar'),
                   ),

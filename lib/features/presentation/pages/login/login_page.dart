@@ -7,8 +7,6 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness ==
-        Brightness.dark; // Verifica si es modo oscuro
 
     return Scaffold(
       appBar: const TopNavigation(title: "Iniciar Sesión", isMainScreen: true),

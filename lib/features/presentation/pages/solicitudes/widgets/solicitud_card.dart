@@ -40,7 +40,7 @@ class _SolicitudCardState extends State<SolicitudCard> {
     final textColor = theme.colorScheme.onSurface;
 
     return GestureDetector(
-      onTap: () => _showExpandableModal(context), // Llama al modal expandible
+      onTap: () => _showExpandableModal(context), 
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -168,7 +168,7 @@ class _SolicitudCardState extends State<SolicitudCard> {
   // Mostrar la respuesta si está disponible
   Widget _buildResponse(String? response) {
     if (response == null || response.isEmpty) {
-      return const SizedBox.shrink(); // No mostrar nada si no hay respuesta
+      return const SizedBox.shrink(); // No se construye la respuesta en caso de no haber
     }
 
     return Padding(
@@ -235,7 +235,6 @@ class _SolicitudCardState extends State<SolicitudCard> {
     }
   }
 
-  // Mostrar la hoja modal expandible desde abajo
   void _showExpandableModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -243,9 +242,9 @@ class _SolicitudCardState extends State<SolicitudCard> {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.5, // Altura inicial (50% de la pantalla)
-          minChildSize: 0.3, // Altura mínima
-          maxChildSize: 0.9, // Altura máxima
+          initialChildSize: 0.5,
+          minChildSize: 0.3, 
+          maxChildSize: 0.9,
           builder: (context, scrollController) {
             return Container(
               decoration: BoxDecoration(
@@ -496,10 +495,8 @@ class _SolicitudCardState extends State<SolicitudCard> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () async {
-                          // Cierra el modal de edición
                           Navigator.pop(context);
 
-                          // Realiza la solicitud para editar
                           await _sendEditRequest(
                             subjectController.text,
                             messageController.text,
@@ -576,8 +573,7 @@ class _SolicitudCardState extends State<SolicitudCard> {
         _logger.d("Ticket eliminado exitosamente.");
         _showDialog('Éxito', 'El ticket fue eliminado exitosamente.');
 
-        // Llamamos al callback para eliminar el ticket de la lista en el widget padre
-        widget.onDelete(widget.solicitud);
+        widget.onDelete(widget.solicitud); // CallBack para eliminar el ticket en pantalla
       } else {
         _logger.e("Error al eliminar el ticket.");
         _showDialog('Error', 'No se pudo eliminar el ticket.');
